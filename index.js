@@ -1,10 +1,15 @@
 document.addEventListener("DOMContentLoaded", function(){
   loadPosts()
   loadFormlistener()
+  eventDelegation()
   buttonEvent()
   clickEvent()
   mouseOverEvent()
 })
+
+const formTitle = document.getElementById("title")
+const formAuthor = document.getElementById("author")
+const formContent = document.getElementById("content")
 
 function loadPosts(){
   fetch("http://localhost:3000/posts")
@@ -50,9 +55,9 @@ function loadFormlistener(){
 
 function getInfo(event){
   return {
-      title: event.target.querySelector("#title").value,
-      author: event.target.querySelector("#author").value,
-      content: event.target.querySelector("#content").value
+      title: formTitle.value,
+      author: formAuthor.value,
+      content: formContent.value
   }
 }
 
@@ -61,9 +66,12 @@ function postHtml(post){
   <div class="card">
       <div class="card-content">
           <span class="card-title">${post.title}</span>
-          <p>${post.author}</p>
-          <p>${post.content}</p>
-          <button class="colorButton">Change Background</button>
+          <span class="card-author"><p>${post.author}</p></span>
+          <span class="card-content"><p>${post.content}</p></span>
+          <span class="card-likes"><p class="likes">${post.likes}</p></span>
+          <button class="add-like">Like me!</button>
+          <button class="edit">Edit me!</button>
+          <button class="delete">Delete me!</button>
       </div>
   </div>
   `
@@ -73,10 +81,33 @@ const attachPost = function(post){
   document.querySelector(".post-lists").innerHTML += post
 }
 
+function eventDelegation(){
+  const postList = document.querySelector(".post-lists")
+  postList.addEventListener("click", function(e){
+    if (e.target.className == "add-like"){
+      let likes = parseInt(e.target.parentElement.querySelector(".likes").innerText)
+      let new_likes = likes+1
+      e.target.parentElement.querySelector(".likes").innerText = new_likes
+    } else if (e.target.className == "edit"){
+        const [title, author, content] = e.target.parentElement.querySelectorAll("span")
+        formTitle.value = title.innerText
+        formAuthor.value = author.innerText
+        formContent.value = content.innerText
+        
+
+
+      debugger
+    } else if (e.target.className == "delete"){
+      console.log("you clicked delete")
+    }
+  })
+}
+
+
 const clearForm = () => {
-  document.getElementById("title").value = ""
-  document.getElementById("author").value = ""
-  document.getElementById("content").value = ""
+  formTitle.value = ""
+  formAuthor.value = ""
+  formContent.value = ""
 }
 
 function buttonEvent(){
