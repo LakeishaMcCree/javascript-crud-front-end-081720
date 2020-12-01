@@ -10,6 +10,8 @@ document.addEventListener("DOMContentLoaded", function(){
 const formTitle = document.getElementById("title")
 const formAuthor = document.getElementById("author")
 const formContent = document.getElementById("content")
+const postForm = document.getElementById("blog-form")
+const baseURL = "http://localhost:3000/posts"
 
 function loadPosts(){
   fetch("http://localhost:3000/posts")
@@ -18,6 +20,7 @@ function loadPosts(){
 }
 
 function addPoststoPage(posts){
+  document.querySelector(".post-lists").innerHTML = ""
   posts.forEach(function(post){
     // need to create the post in here, attach it to the page
     attachPost(postHtml(post))
@@ -27,30 +30,47 @@ function addPoststoPage(posts){
 
 function loadFormlistener(){
   // identify the form element
-  const postForm = document.getElementById("blog-form")
   // add the event listener to the form for the form submit
   postForm.addEventListener("submit", function(event){
       event.preventDefault()
       // grab text from each field
       const postResults = getInfo(event)
+      let options
+      let url
+      if (postForm.dataset.action === "create"){
+        options = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(postResults)
+        }
+        url = baseURL
+      } else if (postForm.dataset.action === "update"){
+        options = {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(postResults)
+        }
+        url = `${baseURL}/${postForm.dataset.id}`
+      }
       // fetch our results to the back end
-      fetch("http://localhost:3000/posts", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(postResults)
-      })
+      fetch(url, options)
       .then(resp => resp.json())
       .then(data => {
         // create the html to display the new post
         const htmlPost = postHtml(data)
         // add the new post to the DOM
         attachPost(htmlPost)
+        addPostsToPage(posts)
         clearForm()
       })
   })  
 }
+
+
 
 
 function getInfo(event){
@@ -64,7 +84,7 @@ function getInfo(event){
 function postHtml(post){
   return `
   <div class="card">
-      <div class="card-content">
+      <div class="card-content" id="${post.id}">
           <span class="card-title">${post.title}</span>
           <span class="card-author"><p>${post.author}</p></span>
           <span class="card-content"><p>${post.content}</p></span>
@@ -93,11 +113,12 @@ function eventDelegation(){
         formTitle.value = title.innerText
         formAuthor.value = author.innerText
         formContent.value = content.innerText
-        
+        postForm.dataset.id = e.target.parentElement.id
+        document.getElementsByClassName("btn")[0].value = "Edit Post"
+        postForm.dataset.action = "update"
 
-
-      debugger
     } else if (e.target.className == "delete"){
+      debugger
       console.log("you clicked delete")
     }
   })
@@ -105,6 +126,8 @@ function eventDelegation(){
 
 
 const clearForm = () => {
+  postForm.dataset.action = "create"
+  delete postForm.dataset.id
   formTitle.value = ""
   formAuthor.value = ""
   formContent.value = ""
