@@ -99,6 +99,8 @@ async function deletePost(id){
 
 
 
+
+
 function getInfo(event){
   return {
       title: formTitle.value,
@@ -144,6 +146,7 @@ function eventDelegation(){
         postForm.dataset.action = "update"
 
     } else if (e.target.className == "delete"){
+      debugger
       console.log("you clicked delete")
       const postID = e.target.parentElement.id
       deletePost(postID)
