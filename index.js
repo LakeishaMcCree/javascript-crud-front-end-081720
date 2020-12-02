@@ -16,7 +16,10 @@ const baseURL = "http://localhost:3000/posts"
 function loadPosts(){
   fetch("http://localhost:3000/posts")
   .then(resp => resp.json())
-  .then(data =>addPoststoPage(data))
+  .then(data =>{
+    addPoststoPage(data)
+  })
+  .then(()=> likeMe())
 }
 
 function addPoststoPage(posts){
@@ -96,8 +99,39 @@ async function deletePost(id){
 //   
 // }
 
+// add function for likes
+function likeMe(){
+  // set constant for selecting all the like buttons
+  const likeButtons = document.querySelectorAll(".add-like")
+  // loop through each button
+  for (const likeButton of likeButtons){
+    // add event listener to each one
+    likeButton.addEventListener("click", sendLike)
+  }
+}
 
+// function for our like fetch request with async/await syntax
+// it's a patch! I'm using the event that we've captured, and we're passing i
+async function sendLike(e){
+  const postID = e.target.parentElement.id
+  let likes = parseInt(e.target.parentElement.querySelector(".likes").innerText)
+  likes ++
+  const postObj = {
+    likes: likes
+  }
 
+  const options = {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(postObj)
+  }
+  const url = `${baseURL}/${postID}`
+  const resp = await fetch(url, options)
+  const data = await resp.json()
+  loadPosts()
+}
 
 
 
@@ -135,7 +169,6 @@ function eventDelegation(){
     if (e.target.className == "add-like"){
       let likes = parseInt(e.target.parentElement.querySelector(".likes").innerText)
       let new_likes = likes+1
-      e.target.parentElement.querySelector(".likes").innerText = new_likes
     } else if (e.target.className == "edit"){
         const [title, author, content] = e.target.parentElement.querySelectorAll("span")
         formTitle.value = title.innerText
